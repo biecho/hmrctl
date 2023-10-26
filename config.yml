@@ -39,7 +39,6 @@ hammering:
   hammerData: RANDOM
   # Strategy to access memory during hammering
   memoryAccessStrategy: native
-
   # If you want the hypervisor to assist with some of the memory accesses,
   # specify the percentage of accesses for hypervisor assistance.
   # hypervisorAssistance:
