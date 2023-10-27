@@ -4,6 +4,9 @@ use clap::{App, Arg, SubCommand};
 use log::{error, info};
 
 use crate::config::loader::load_config;
+use crate::config::models::Config;
+use crate::dram_translation::dram_translator::DramTranslator;
+use crate::physical_translation::translator::create_physical_translator;
 
 mod config;
 mod dram_translation;
@@ -50,9 +53,17 @@ fn handle_run_subcommand(matches: &clap::ArgMatches<'_>) {
 
     initialize_logger(&config_dir);
 
-    if let Err(e) = load_and_print_config(&config_dir) {
-        error!("Failed to load configuration: {}", e);
-        std::process::exit(1);
+    match load_app_config(&config_dir) {
+        Ok(config) => {
+            info!("Config:\n{}", config);
+
+            let _dram_translator = DramTranslator::new(config.dram.layout);
+            let _physical_translator = create_physical_translator(config.physical_translation);
+        }
+        Err(e) => {
+            error!("Failed to load configuration: {}", e);
+            std::process::exit(1);
+        }
     }
 }
 
@@ -67,10 +78,8 @@ fn initialize_logger(config_dir: &Path) {
 }
 
 /// Loads the main configuration file from the given directory and logs its contents.
-fn load_and_print_config(config_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+fn load_app_config(config_dir: &Path) -> Result<Config, Box<dyn std::error::Error>> {
     let config_path = config_dir.join(MAIN_CONFIG_FILE);
-
     let config = load_config(&config_path)?;
-    info!("Config:\n{}", config);
-    Ok(())
+    Ok(config)
 }

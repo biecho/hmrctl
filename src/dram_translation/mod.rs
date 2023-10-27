@@ -1,2 +1,2 @@
-mod dram_translator;
+pub mod dram_translator;
 

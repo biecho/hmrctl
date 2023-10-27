@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::config::models::SelfmapConfig;
-use crate::physical_translation::translator::VirtualToPhysicalTranslator;
+use crate::physical_translation::translator::PhysicalTranslator;
 
 use super::V2PError;
 
@@ -24,8 +24,8 @@ impl PagemapStrategy {
     }
 }
 
-impl VirtualToPhysicalTranslator for PagemapStrategy {
-    fn translate_to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
+impl PhysicalTranslator for PagemapStrategy {
+    fn to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
         let mut file = File::open(&self.config.pagemap_path)
             .map_err(V2PError::IoError)?;
 
@@ -86,7 +86,7 @@ mod tests {
         // Assuming the virtual address corresponding to the start of our tempfile.
         let virtual_address = 0;
 
-        let physical_address = strategy.translate_to_physical(virtual_address).unwrap();
+        let physical_address = strategy.to_physical(virtual_address).unwrap();
 
         assert_eq!(physical_address, pfn * 4096);
     }

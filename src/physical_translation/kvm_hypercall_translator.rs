@@ -1,5 +1,5 @@
 use crate::config::models::HypercallConfig;
-use crate::physical_translation::translator::VirtualToPhysicalTranslator;
+use crate::physical_translation::translator::PhysicalTranslator;
 use super::{PhysicalAddress, V2PError, VirtualAddress};
 
 struct HypercallArgs {
@@ -30,11 +30,11 @@ impl<F> KvmHypercallStrategy<F>
     }
 }
 
-impl<F> VirtualToPhysicalTranslator for KvmHypercallStrategy<F>
+impl<F> PhysicalTranslator for KvmHypercallStrategy<F>
     where
         F: Fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>,
 {
-    fn translate_to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
+    fn to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
         (self.translate_fn)(virtual_address)
     }
 }
@@ -79,7 +79,7 @@ mod tests {
         });
 
         let virt_addr = 5;
-        let phys_addr = strategy.translate_to_physical(virt_addr).unwrap();
+        let phys_addr = strategy.to_physical(virt_addr).unwrap();
 
         assert_eq!(phys_addr, 15);
     }
