@@ -1,68 +1,29 @@
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
+use crate::config::models::SelfmapConfig;
+
 use super::{PhysicalAddress, V2PError, VirtualAddress};
-
-macro_rules! bit {
-    ($x:expr) => {
-        1u64 << $x
-    };
-}
-
-macro_rules! mask {
-    ($start:expr, $end:expr) => {
-        ((1u64 << ($end - $start + 1)) - 1) << $start
-    };
-}
-
-macro_rules! is_set {
-    ($entry:expr, $flag:expr) => {
-        $entry & $flag != 0
-    };
-}
-
-macro_rules! extract_bits {
-    ($entry:expr, $mask:expr) => {
-        $entry & $mask
-    };
-}
-
-/// The size of a memory page in bytes.
-const PAGE_SIZE: u64 = 4096;
-
-/// The size of an entry in the /proc/pid/pagemap file in bytes.
-const PAGEMAP_ENTRY_SIZE: u64 = 8;
-
-/// A mask to extract the page frame number (PFN) from a pagemap entry.
-const PFN_MASK: u64 = mask!(0, 54);
-
-/// A flag in the pagemap entry indicating if the page is present in memory.
-const PAGE_PRESENT: u64 = bit!(63);
 
 /// Represents a strategy for translating virtual addresses to physical
 /// addresses using the Linux /proc/pid/pagemap interface.
 pub struct PagemapStrategy {
-    /// Path to the pagemap file for the target process.
-    pagemap_path: String,
+    /// Configuration for selfmap translation strategy.
+    config: SelfmapConfig,
 }
 
 impl PagemapStrategy {
-    /// Constructs a new `PagemapStrategy` for a given process pagemap path.
+    /// Constructs a new `PagemapStrategy` from the configuration.
     ///
     /// # Arguments
     ///
-    /// * `pagemap_path`: The path to the /proc/pid/pagemap file for the target process.
-    pub fn new(pagemap_path: &str) -> Self {
-        PagemapStrategy {
-            pagemap_path: pagemap_path.to_string(),
-        }
+    /// * `config`: The selfmap configuration details.
+    pub fn new(config: SelfmapConfig) -> Self {
+        PagemapStrategy { config }
     }
 
+
     /// Translates a virtual address to its corresponding physical address.
-    ///
-    /// This function reads the pagemap entry for the virtual address and calculates
-    /// the physical address based on the page frame number (PFN) and the offset
-    /// within the page.
     ///
     /// # Arguments
     ///
@@ -74,10 +35,10 @@ impl PagemapStrategy {
     pub fn translate_to_physical(&self, virtual_address: VirtualAddress)
                                  -> Result<PhysicalAddress, V2PError>
     {
-        let mut file = File::open(&self.pagemap_path)
+        let mut file = File::open(&self.config.pagemap_path)
             .map_err(V2PError::IoError)?;
 
-        let index = virtual_address / PAGE_SIZE * PAGEMAP_ENTRY_SIZE;
+        let index = virtual_address / self.config.page_size * self.config.pagemap_entry_size;
         file.seek(SeekFrom::Start(index))
             .map_err(V2PError::IoError)?;
 
@@ -86,28 +47,31 @@ impl PagemapStrategy {
             .map_err(V2PError::IoError)?;
 
         let entry = u64::from_ne_bytes(buffer);
-        if !is_set!(entry, PAGE_PRESENT) {
+        if entry & self.config.page_present_mask == 0 {
             return Err(V2PError::UnmappedAddress);
         }
 
-        let page_frame_number = extract_bits!(entry, PFN_MASK);
-        let phys_addr = page_frame_number * PAGE_SIZE + (virtual_address % PAGE_SIZE);
+        let page_frame_number = entry & self.config.pfn_mask;
+        let phys_addr = page_frame_number * self.config.page_size + (virtual_address % self.config.page_size);
 
         Ok(phys_addr)
     }
+
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+
+    use tempfile::NamedTempFile;
+
+    use super::*;
 
     #[test]
     fn test_valid_translation_with_mock() {
         // Mocked pagemap entry for a page that's present with a PFN of 12345.
         let pfn = 12345u64;
-        let entry = (pfn & PFN_MASK) | PAGE_PRESENT;
+        let entry = (pfn << 0) | (1u64 << 63); // Assuming the PFN_MASK starts at bit 0 and PAGE_PRESENT is at bit 63.
         let mock_entry = entry.to_ne_bytes();
 
         // Create a mock pagemap file.
@@ -118,14 +82,23 @@ mod tests {
 
         // Using our mock path to test the logic.
         let mock_path = tmp_file.path().to_str().expect("Failed to convert path.");
-        let strategy = PagemapStrategy::new(mock_path);
+
+        let config = SelfmapConfig {
+            pagemap_path: mock_path.to_string(),
+            page_size: 4096,
+            pagemap_entry_size: 8,
+            pfn_mask: (1u64 << 55) - 1, // Mask from bit 0 to 54 inclusive.
+            page_present_mask: 1u64 << 63,
+        };
+
+        let strategy = PagemapStrategy::new(config);
 
         // Assuming the virtual address corresponding to the start of our tempfile.
         let virtual_address = 0;
 
         let physical_address = strategy.translate_to_physical(virtual_address).unwrap();
 
-        assert_eq!(physical_address, pfn * PAGE_SIZE);
+        assert_eq!(physical_address, pfn * 4096);
     }
-
 }
+

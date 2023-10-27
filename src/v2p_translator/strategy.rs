@@ -1,22 +1,19 @@
-use super::{V2PError, VirtualAddress};
-use super::PhysicalAddress;
+use crate::config::models::PhysicalTranslationStrategy;
+use crate::v2p_translator::pagemap_strategy::PagemapStrategy;
 
-pub enum TranslationStrategy {
-    // Pagemap(PagemapStrategy),
-    // Hypervisor(HypervisorStrategy),
-    // ... other strategies can be added in the future
+pub enum StrategyInstance {
+    Pagemap(PagemapStrategy),
+    Hypercall, // Assume you'll have a separate struct for this
+    // ... add other strategies as needed ...
 }
 
-impl TranslationStrategy {
-    pub fn translate_to_physical(&self, virtual_address: VirtualAddress)
-                                 -> Result<PhysicalAddress, V2PError> {
-        Ok(0)
-        // match self {
-        //     TranslationStrategy::Pagemap(strategy) =>
-        //         strategy.translate_to_physical(virtual_address),
-        //     TranslationStrategy::Hypervisor(strategy) =>
-        //         strategy.translate_to_physical(virtual_address),
-        // }
+impl StrategyInstance {
+    pub fn from_config(config: PhysicalTranslationStrategy) -> Self {
+        match config {
+            PhysicalTranslationStrategy::Selfmap(sm_config) => {
+                StrategyInstance::Pagemap(PagemapStrategy::new(sm_config))
+            }
+            _ => StrategyInstance::Hypercall
+        }
     }
-
 }

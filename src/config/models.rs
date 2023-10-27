@@ -29,20 +29,25 @@ pub struct AllocationConfig {
 #[derive(Debug, Deserialize)]
 pub enum PhysicalTranslationStrategy {
     #[serde(rename = "selfmap")]
-    Selfmap {
-        pagemap_path: String,
-    },
+    Selfmap(SelfmapConfig),
     #[serde(rename = "hypercall")]
     Hypercall {
         hypercall_number: u32,
     },
 }
 
-/// Different methods for physical address translation.
 #[derive(Debug, Deserialize)]
-pub enum TranslationMethod {
-    Selfmap,
-    Hypercall,
+pub struct SelfmapConfig {
+    /// Path to the pagemap file for the target process.
+    pub pagemap_path: String,
+    /// The size of a memory page in bytes.
+    pub page_size: u64,
+    /// The size of an entry in the /proc/pid/pagemap file in bytes.
+    pub pagemap_entry_size: u64,
+    /// Bit mask to extract the page frame number (PFN) from a pagemap entry.
+    pub pfn_mask: u64,
+    /// Bit mask indicating if the page is present in memory.
+    pub page_present_mask: u64,
 }
 
 /// Configuration specific to the DRAM module and its layout.

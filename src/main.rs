@@ -6,6 +6,8 @@ use log::{error, info};
 use crate::config::loader::load_config;
 
 mod config;
+mod dram;
+mod v2p_translator;
 
 
 // Constants for default and file names
@@ -72,5 +74,3 @@ fn load_and_print_config(config_dir: &Path) -> Result<(), Box<dyn std::error::Er
     info!("Config:\n{}", config);
     Ok(())
 }
-
-// ... [rest of your code, like the load_config function definition, etc.]

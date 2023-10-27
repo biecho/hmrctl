@@ -26,6 +26,10 @@ dram:
 physical_translation:
   selfmap:
     pagemap_path: /proc/self/pagemap
+    page_size: 4096  # bytes
+    pagemap_entry_size: 8  # bytes
+    pfn_mask: 0x7FFFFFFFFFFFFF  # hex mask for bits 0 to 54 inclusive
+    page_present_mask: 0x8000000000000000  # hex mask for bit 63
   # Or alternatively
   # hypercall:
   #   hypercall_number: 14

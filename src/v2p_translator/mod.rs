@@ -5,7 +5,7 @@ pub mod kvm_hypercall_strategy;
 pub mod error;
 
 // Re-exporting public-facing components for external modules
-pub use strategy::TranslationStrategy;
+pub use strategy::StrategyInstance;
 pub use error::V2PError;
 
 // You can also define common types or utilities here.
