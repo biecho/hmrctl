@@ -1,7 +1,7 @@
 // Importing submodule definitions
 pub mod strategy;
 pub mod pagemap_strategy;
-pub mod hypervisor_strategy;
+pub mod kvm_hypercall_strategy;
 pub mod error;
 
 // Re-exporting public-facing components for external modules
