@@ -1,0 +1,9 @@
+memory:
+  allocation:
+    hugepagesMount: /tmp/hugepages
+
+dram:
+  layout:
+    addressingFunctions:
+      - 0x2040
+      - 0x24000

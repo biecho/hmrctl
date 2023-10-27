@@ -3,42 +3,43 @@ memory:
   # Configuration related to memory allocation
   allocation:
     # Path to the mounted hugepages filesystem
-    hugepagesMount: /path/to/hugepages/mounted
+    hugepages_mount: /path/to/hugepages/mounted
     # Amount of memory in bytes to allocate
-    sizeBytes: 1073741824
+    size_bytes: 1073741824
 
 # Configuration specific to the DRAM module and its layout
 dram:
   # DRAM addressing layout configuration
   layout:
     # List of functions for address mapping
-    addressingFunctions:
+    addressing_functions:
       - 0x2040
       - 0x24000
       - 0x48000
       - 0x90000
     # Mask to filter out the rows in the physical address
-    rowMask: 0xffffe0000
+    row_mask: 0xffffe0000
     # Mask to filter out the columns in the physical address
-    colMask: 0x1FFF
+    col_mask: 0x1FFF
 
 # Strategy for translating virtual to physical addresses
-physicalTranslation:
-  # Method can be SELFMAP or HYPERCALL
-  method: SELFMAP
+physical_translation:
+  # Method can be Selfmap or Hypercall
+  method: Selfmap
 
 # Configuration related to the hammering process
 hammering:
   # Number of rounds for hammering
   rounds: 1000000
   # Offset from the beginning of the contiguous chunk
-  baseOffset: 0
+  base_offset: 0
   # Length of the hammer pattern
-  patternLength: 1024
+  pattern_length: 1024
   # Strategy for generating data to be hammered
-  hammerData: RANDOM
+  hammer_data: Random
   # Strategy to access memory during hammering
-  memoryAccessStrategy: native
+  memory_access_strategy:
+    strategy: native
   # If you want the hypervisor to assist with some of the memory accesses,
   # specify the percentage of accesses for hypervisor assistance.
   # hypervisorAssistance:

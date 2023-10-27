@@ -1,0 +1,15 @@
+# config/log4rs.yml
+refresh_rate: 30 seconds
+
+appenders:
+  stdout:
+    kind: console
+
+root:
+  level: info
+  appenders:
+    - stdout
+
+loggers:
+  loader:
+    level: debug

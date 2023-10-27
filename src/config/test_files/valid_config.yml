@@ -1,0 +1,21 @@
+memory:
+  allocation:
+    hugepagesMount: /tmp/hugepages
+    sizeBytes: 1073741824
+
+dram:
+  layout:
+    addressingFunctions:
+      - 0x2040
+      - 0x24000
+      - 0x48000
+      - 0x90000
+    rowMask: 0xffffe0000
+    colMask: 0x1FFF
+
+hammering:
+  rounds: 1000000
+  baseOffset: 0
+  patternLength: 1024
+  hammerData: RANDOM
+  memoryAccessStrategy: native
