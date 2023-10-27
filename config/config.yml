@@ -24,8 +24,11 @@ dram:
 
 # Strategy for translating virtual to physical addresses
 physical_translation:
-  # Method can be Selfmap or Hypercall
-  method: Selfmap
+  selfmap:
+    pagemap_path: /proc/self/pagemap
+  # Or alternatively
+  # hypercall:
+  #   hypercall_number: 14
 
 # Configuration related to the hammering process
 hammering:

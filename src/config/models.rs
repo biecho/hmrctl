@@ -7,7 +7,7 @@ use std::fmt;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub memory: MemoryConfig,
-    pub physical_translation: PhysicalTranslation,
+    pub physical_translation: PhysicalTranslationStrategy,
     pub dram: DramConfig,
     pub hammering: HammeringConfig,
 }
@@ -27,8 +27,15 @@ pub struct AllocationConfig {
 
 /// Strategy for translating virtual to physical addresses.
 #[derive(Debug, Deserialize)]
-pub struct PhysicalTranslation {
-    pub method: TranslationMethod,
+pub enum PhysicalTranslationStrategy {
+    #[serde(rename = "selfmap")]
+    Selfmap {
+        pagemap_path: String,
+    },
+    #[serde(rename = "hypercall")]
+    Hypercall {
+        hypercall_number: u32,
+    },
 }
 
 /// Different methods for physical address translation.
@@ -85,7 +92,7 @@ pub enum MemoryAccessStrategy {
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Memory Config:\n  {}", self.memory)?;
-        writeln!(f, "Physical Translation:\n  {}", self.physical_translation)?;
+        writeln!(f, "Physical Translation:\n  {:?}", self.physical_translation)?;
         writeln!(f, "DRAM Config:\n  {}", self.dram)?;
         write!(f, "Hammering Config:\n  {}", self.hammering)
     }
@@ -100,21 +107,6 @@ impl fmt::Display for MemoryConfig {
 impl fmt::Display for AllocationConfig {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Hugepages Mount: {}\n  Size (bytes): {}", self.hugepages_mount, self.size_bytes)
-    }
-}
-
-impl fmt::Display for PhysicalTranslation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Method: {}", self.method)
-    }
-}
-
-impl fmt::Display for TranslationMethod {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TranslationMethod::Selfmap => write!(f, "Selfmap"),
-            TranslationMethod::Hypercall => write!(f, "Hypercall"),
-        }
     }
 }
 
