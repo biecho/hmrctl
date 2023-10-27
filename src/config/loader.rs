@@ -1,10 +1,13 @@
 // src/config/loader.rs
 
 use std::fs;
+use std::path::Path;
+
 use serde_yaml;
+
 use super::models::Config;
 
-pub fn load_config(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
+pub fn load_config(path: &Path) -> Result<Config, Box<dyn std::error::Error>> {
     let contents = fs::read_to_string(path)?;
     let config: Config = serde_yaml::from_str(&contents)?;
 
@@ -13,11 +16,13 @@ pub fn load_config(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::*;
 
     #[test]
     fn test_load_config_valid_file() {
-        let path = "src/config/test_files/valid_config.yml";
+        let path = Path::new("src/config/test_files/valid_config.yml");
         let result = load_config(path);
 
         assert!(result.is_ok(), "Failed to load a valid config file");
@@ -30,10 +35,9 @@ mod tests {
 
     #[test]
     fn test_load_config_invalid_file() {
-        let path = "src/config/test_files/invalid_config.yml";
+        let path = Path::new("src/config/test_files/invalid_config.yml");
         let result = load_config(path);
 
         assert!(result.is_err(), "Managed to load an invalid config file");
     }
-
 }
