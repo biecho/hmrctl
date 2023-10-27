@@ -6,8 +6,8 @@ use log::{error, info};
 use crate::config::loader::load_config;
 
 mod config;
-mod dram;
-mod v2p_translator;
+mod dram_translation;
+mod physical_translation;
 
 
 // Constants for default and file names

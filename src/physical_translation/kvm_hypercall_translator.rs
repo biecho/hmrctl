@@ -1,5 +1,5 @@
 use crate::config::models::HypercallConfig;
-use crate::v2p_translator::translator::VirtualToPhysicalTranslator;
+use crate::physical_translation::translator::VirtualToPhysicalTranslator;
 use super::{PhysicalAddress, V2PError, VirtualAddress};
 
 struct HypercallArgs {

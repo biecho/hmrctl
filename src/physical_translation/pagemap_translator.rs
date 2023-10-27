@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::config::models::SelfmapConfig;
-use crate::v2p_translator::translator::VirtualToPhysicalTranslator;
+use crate::physical_translation::translator::VirtualToPhysicalTranslator;
 
 use super::V2PError;
 

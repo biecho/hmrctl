@@ -1,7 +1,7 @@
 use crate::config::models::PhysicalTranslationStrategy;
-use crate::v2p_translator::kvm_hypercall_translator::KvmHypercallStrategy;
-use crate::v2p_translator::pagemap_translator::PagemapStrategy;
-use crate::v2p_translator::V2PError;
+use crate::physical_translation::kvm_hypercall_translator::KvmHypercallStrategy;
+use crate::physical_translation::pagemap_translator::PagemapStrategy;
+use crate::physical_translation::V2PError;
 
 pub trait VirtualToPhysicalTranslator {
     fn translate_to_physical(&self, virtual_address: u64) -> Result<u64, V2PError>;
