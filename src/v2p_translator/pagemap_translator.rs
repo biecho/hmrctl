@@ -2,8 +2,9 @@ use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::config::models::SelfmapConfig;
+use crate::v2p_translator::translator::VirtualToPhysicalTranslator;
 
-use super::{PhysicalAddress, V2PError, VirtualAddress};
+use super::V2PError;
 
 /// Represents a strategy for translating virtual addresses to physical
 /// addresses using the Linux /proc/pid/pagemap interface.
@@ -21,20 +22,10 @@ impl PagemapStrategy {
     pub fn new(config: SelfmapConfig) -> Self {
         PagemapStrategy { config }
     }
+}
 
-
-    /// Translates a virtual address to its corresponding physical address.
-    ///
-    /// # Arguments
-    ///
-    /// * `virtual_address`: The virtual address to be translated.
-    ///
-    /// # Returns
-    ///
-    /// Returns a `Result` with the translated physical address or an error.
-    pub fn translate_to_physical(&self, virtual_address: VirtualAddress)
-                                 -> Result<PhysicalAddress, V2PError>
-    {
+impl VirtualToPhysicalTranslator for PagemapStrategy {
+    fn translate_to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
         let mut file = File::open(&self.config.pagemap_path)
             .map_err(V2PError::IoError)?;
 
@@ -56,7 +47,6 @@ impl PagemapStrategy {
 
         Ok(phys_addr)
     }
-
 }
 
 #[cfg(test)]

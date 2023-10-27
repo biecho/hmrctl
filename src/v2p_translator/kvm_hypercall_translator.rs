@@ -1,20 +1,23 @@
+use crate::config::models::HypercallConfig;
+use crate::v2p_translator::translator::VirtualToPhysicalTranslator;
 use super::{PhysicalAddress, V2PError, VirtualAddress};
-
-pub struct KvmHypercallStrategy<F = fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>>
-    where
-        F: Fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>,
-{
-    translate_fn: F,
-}
 
 struct HypercallArgs {
     pub virt_addr: VirtualAddress,
     pub phys_addr: PhysicalAddress,
 }
 
+pub struct KvmHypercallStrategy<F = fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>>
+    where
+        F: Fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>,
+{
+    translate_fn: F,
+    pub config: HypercallConfig,
+}
+
 impl KvmHypercallStrategy<fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>> {
-    pub fn new() -> Self {
-        KvmHypercallStrategy { translate_fn: real_hypercall }
+    pub fn new(hc_config: HypercallConfig) -> Self {
+        KvmHypercallStrategy { config: hc_config, translate_fn: real_hypercall }
     }
 }
 
@@ -23,12 +26,16 @@ impl<F> KvmHypercallStrategy<F>
         F: Fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>,
 {
     pub fn with_translate_fn(translate_fn: F) -> Self {
-        KvmHypercallStrategy { translate_fn }
+        KvmHypercallStrategy { translate_fn, config: HypercallConfig { hypercall_number: 0 } }
     }
+}
 
-    pub fn translate_to_physical(&self, virt_addr: VirtualAddress)
-                                 -> Result<PhysicalAddress, V2PError> {
-        (self.translate_fn)(virt_addr)
+impl<F> VirtualToPhysicalTranslator for KvmHypercallStrategy<F>
+    where
+        F: Fn(VirtualAddress) -> Result<PhysicalAddress, V2PError>,
+{
+    fn translate_to_physical(&self, virtual_address: u64) -> Result<u64, V2PError> {
+        (self.translate_fn)(virtual_address)
     }
 }
 

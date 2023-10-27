@@ -31,9 +31,7 @@ pub enum PhysicalTranslationStrategy {
     #[serde(rename = "selfmap")]
     Selfmap(SelfmapConfig),
     #[serde(rename = "hypercall")]
-    Hypercall {
-        hypercall_number: u32,
-    },
+    Hypercall(HypercallConfig),
 }
 
 #[derive(Debug, Deserialize)]
@@ -48,6 +46,11 @@ pub struct SelfmapConfig {
     pub pfn_mask: u64,
     /// Bit mask indicating if the page is present in memory.
     pub page_present_mask: u64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct HypercallConfig {
+    pub hypercall_number: u32,
 }
 
 /// Configuration specific to the DRAM module and its layout.
