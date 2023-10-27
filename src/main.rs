@@ -5,6 +5,7 @@ use crate::config::loader::load_config;
 
 mod config;
 mod dram;
+mod v2p_translator;
 
 fn main() {
     let matches = parse_args();
