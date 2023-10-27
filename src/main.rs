@@ -11,7 +11,7 @@ fn main() {
     }
 
     match load_config("config/config.yml") {
-        Ok(config) => info!("{:?}", config),
+        Ok(config) => info!("Config:\n{}", config),
         Err(e) => {
             error!("Failed to load configuration: {}", e);
             std::process::exit(1);

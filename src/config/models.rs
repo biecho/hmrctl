@@ -1,6 +1,7 @@
 // src/config/models.rs
 
 use serde::Deserialize;
+use std::fmt;
 
 /// Top-level configuration structure.
 #[derive(Debug, Deserialize)]
@@ -80,3 +81,90 @@ pub enum MemoryAccessStrategy {
         // You might add other configuration parameters related to the hypervisor here.
     },
 }
+
+impl fmt::Display for Config {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Memory Config:\n  {}", self.memory)?;
+        writeln!(f, "Physical Translation:\n  {}", self.physical_translation)?;
+        writeln!(f, "DRAM Config:\n  {}", self.dram)?;
+        write!(f, "Hammering Config:\n  {}", self.hammering)
+    }
+}
+
+impl fmt::Display for MemoryConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.allocation)
+    }
+}
+
+impl fmt::Display for AllocationConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Hugepages Mount: {}\n  Size (bytes): {}", self.hugepages_mount, self.size_bytes)
+    }
+}
+
+impl fmt::Display for PhysicalTranslation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Method: {}", self.method)
+    }
+}
+
+impl fmt::Display for TranslationMethod {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TranslationMethod::Selfmap => write!(f, "Selfmap"),
+            TranslationMethod::Hypercall => write!(f, "Hypercall"),
+        }
+    }
+}
+
+impl fmt::Display for DramConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.layout)
+    }
+}
+
+impl fmt::Display for DramLayout {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "DramLayout {{")?;
+        writeln!(f, "  addressing_functions: [")?;
+        for func in &self.addressing_functions {
+            writeln!(f, "    0x{:x},", func)?;
+        }
+        writeln!(f, "  ],")?;
+        writeln!(f, "  row_mask: 0x{:x},", self.row_mask)?;
+        writeln!(f, "  col_mask: 0x{:x}", self.col_mask)?;
+        writeln!(f, "}}")
+    }
+}
+
+impl fmt::Display for HammeringConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Rounds: {}\n  Base Offset: {}\n  Pattern Length: {}\n  Hammer Data: {}\n  Memory Access Strategy: {}",
+            self.rounds, self.base_offset, self.pattern_length, self.hammer_data, self.memory_access_strategy
+        )
+    }
+}
+
+impl fmt::Display for HammerData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            HammerData::Random => write!(f, "Random"),
+            // Add more when other strategies are available...
+        }
+    }
+}
+
+impl fmt::Display for MemoryAccessStrategy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MemoryAccessStrategy::Native => write!(f, "Native"),
+            MemoryAccessStrategy::HypervisorAssistance { percentage } => {
+                write!(f, "Hypervisor Assistance (Percentage: {}%)", percentage)
+            },
+        }
+    }
+}
+
